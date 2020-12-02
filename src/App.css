@@ -1,6 +1,9 @@
 body
 {
     margin: 0;
+    background:  linear-gradient(to top,
+    #1a2980,
+    #26d0ce);
 }
 
 .all
@@ -9,7 +12,7 @@ body
     flex-wrap: wrap;
     flex-direction: column;
 }
-
+/* -webkit-border-image: -webkit-gradient(linear, left top, left bottom, from(#00abeb), to(#fff), color-stop(0.5, #fff), color-stop(0.5, #66cc00)) 21 30 30 21 repeat repeat; */
 .box
 {
     width:42vw;
@@ -17,16 +20,33 @@ body
     z-index: 0;
     grid-template-columns: auto auto auto;
     background-color: #2196F3;
-    padding: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
     position: relative;
     display: flex;
+    touch-action: none;
 }
 
 .grids
 {
   background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.8);
+  border-bottom: 10px solid #2196F3;
+  border-right: 10px solid #2196F3;
   margin : 0px;
   font-size: 1.1rem;
   text-align: center;
+}
+
+.button
+{
+   background-color: white;
+   border-radius: 4px;
+   justify-content: right;
+   text-align: center;
+   width: 35px;
+   transform: rotate(-180deg);
+   padding: 7px;
+   cursor: pointer;
+   box-shadow: -2px -2px 3px rgba(30, 161, 179,0.2),
+                3px 3px 3px rgba(0,0,0,0.2);
 }
