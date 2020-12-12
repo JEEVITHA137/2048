@@ -4,6 +4,25 @@ body
     background:  linear-gradient(to top,
     #1a2980,
     #26d0ce);
+    height: 100vh;
+}
+
+header
+{
+    color:white;
+    font-size: 60px;
+    font-weight: bold;
+    padding: 10px 0px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.score
+{
+    color: white;
+    font-size: 40px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 .all
@@ -15,38 +34,250 @@ body
 /* -webkit-border-image: -webkit-gradient(linear, left top, left bottom, from(#00abeb), to(#fff), color-stop(0.5, #fff), color-stop(0.5, #66cc00)) 21 30 30 21 repeat repeat; */
 .box
 {
-    width:42vw;
-    height:42vw;
-    z-index: 0;
-    grid-template-columns: auto auto auto;
-    background-color: #2196F3;
-    padding-left: 10px;
-    padding-top: 10px;
-    position: relative;
+    width: 450px;
+    height: 450px;
+    box-sizing: border-box;
+    position: absolute;
     display: flex;
     touch-action: none;
+    background-color: #2196F3;
+    border: 5px solid  #2196F3;
+    border-radius: 10px;
+    box-shadow: -2px -2px 3px rgba(30, 161, 179,0.2),
+                3px 3px 3px rgba(0,0,0,0.2);
 }
 
 .grids
 {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-bottom: 10px solid #2196F3;
-  border-right: 10px solid #2196F3;
-  margin : 0px;
-  font-size: 1.1rem;
-  text-align: center;
+   height: 110px;
+   width: 110px;
+  border: 5px solid  #2196F3;
+  background-color: white;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.grids div
+{
+    text-align: center;
+    font-size: 25px;
+    font-weight: bolder;
+    font-family:  Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.cellvalues
+{
+  height: 100px;
+  width: 110px;
+  cursor: pointer;
+  border-radius: 5px;
+  padding-top: 25px;
+  transition: grow linear 0.9s;
+}
+
+@keyframes grow
+{
+    from{
+        height: 0px;
+        width: 0px;
+    }
+    to{
+        height: 100px;
+        width: 110px;
+    }
 }
 
 .button
 {
    background-color: white;
    border-radius: 4px;
-   justify-content: right;
+   margin: 15px;
    text-align: center;
-   width: 35px;
-   transform: rotate(-180deg);
-   padding: 7px;
+   width: 45px;
+   padding: 9px;
    cursor: pointer;
    box-shadow: -2px -2px 3px rgba(30, 161, 179,0.2),
                 3px 3px 3px rgba(0,0,0,0.2);
+    font-size: 20px;
+}
+
+.icons
+{
+    transform: rotate(-180deg);
+}
+
+.resets
+{
+    position: fixed;
+    right: 10%;
+    margin-top: -90px;
+}
+
+.board
+{
+    position: absolute;
+    width:450px;
+    height:450px;
+    background-color: rgba(0, 0, 0, 0.4);
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 70px;
+    padding-top: 140px;
+    border-radius: 10px;
+    color:  white;
+    z-index: 2;
+}
+
+.boardnone
+{
+    display: none;
+}
+.titletext{
+    list-style: none ;
+}
+
+.titletext :nth-child(1){
+    animation : bounce ease-in 0.7s;
+}
+
+.titletext :nth-child(2){
+    animation : bounce ease-in 0.7s 0.2s;
+}
+
+.titletext :nth-child(3){
+    animation : bounce ease-in 0.7s 0.4s;
+}
+
+.titlextra li:nth-child(4){
+    animation : bounce ease-in 0.7s 0.6s;
+}
+
+.titlextra li:nth-child(5){
+    animation : bounce ease-in 0.7s 0.8s;
+}
+
+
+.tryagain
+{
+    color: white;
+    font-size: 30px;
+    margin: 55px;
+    padding: 5px 0px;
+    background-color: #2196F3;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: -2px -2px 3px rgba(30, 161, 179,0.2),
+                3px 3px 3px rgba(0,0,0,0.2);
+}
+
+.tryagain:hover
+{
+    background-color: blue;
+}
+
+.footer
+{
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    color: white;
+    background-color: #26d0ce;
+    padding: 8px 0px;
+    text-align: center;
+    font-family: Verdana, "Geneva", Tahoma, sans-serif;
+
+}
+
+.footer a{
+    color: white;
+}
+
+@media only screen and (max-width: 490px)
+{
+    .box
+    {
+        width:380px;
+        height:380px;
+    }
+    .board
+    {
+        width:380px;
+        height:380px;
+        padding-top: 40px;
+        font-size: 60px;
+    }
+   
+    .grids
+    {
+        height:90px;
+    }
+    .score
+    {
+        font-size: 33px;
+    }
+    .cellvalues
+    {
+        height: 80px;
+        width: 110px;
+    }
+}
+
+@keyframes grow{
+    from {
+     text-align: center;
+      width: 0px;
+      height: 0px;
+    }
+  } 
+
+@keyframes left{
+    from {
+        transform: translateX(-10px);
+        filter: blur(20px);
+    }
+  }
+
+  @keyframes right{
+    from {
+        transform: translateX(10px);
+        transition: 1S;
+        filter: blur(20px);
+        opacity: 0;
+    }
+  }
+
+
+@keyframes up{
+    from {
+        transform: translateX(10px);
+        transition: 1S;
+        filter: blur(20px);
+        opacity: 0;
+    }
+} 
+
+
+
+@keyframes down{
+    from {
+        transform: translateX(-10px);
+        transition: 1S;
+        filter: blur(20px);
+        opacity: 0;
+    }
+} 
+
+@keyframes bounce
+{
+    from
+    {
+        transform: translateY(-60%);
+    }
+    to
+    {
+        transform: translateY(15%);
+    }
+    
 }

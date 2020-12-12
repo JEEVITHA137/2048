@@ -1,9 +1,54 @@
 import React,{Component} from 'react';
+import {Howl, Howler} from 'howler';
 import './App.css';
-import * as icons from "react-icons/fc";
+import * as FcIcons from "react-icons/fc";
 
 const shuffleArray =(array) =>  array.sort(() => Math.random() - 0.5);
+const findValue =(num) =>
+{
+  let i=0;
+  while(num > 0)
+  {
+    num = Math.floor(num / 2);
+    i = i+1;
+  }
+  
+  return i-1;
+}
 
+const ValueBox = ({value,change,temp,swipe}) => { 
+  if(value === null)
+  return null;
+    const arr = ["#81D8D0","#93ede4","#aef1f5","#7EF9FF","#008ECC","#81D8D0","#57A0D3","#73C2FB","#89CFF0","#9db0d1","lightblue"];
+    let tran ;
+    if(change)
+    {
+      tran = "grow 0.4s"
+    }
+    else if(value!==temp)
+    {
+       if(swipe === "left")
+       {
+          tran="right 0.1s"
+       }
+       else if(swipe === "right")
+       {
+          tran="left 0.1s"
+       }
+       else if(swipe === "up")
+       {
+          tran="down 0.1s"
+       }
+       else if(swipe === "down")
+       {
+          tran="up 0.1s"
+       }
+    }
+    let index = findValue(value)
+    return (
+    <div className="cellvalues" style={{backgroundColor:arr[index-1],animation:tran}}>{value}</div>
+    )
+}
 class App extends Component{
 
   state = {
@@ -46,11 +91,32 @@ class App extends Component{
     {value: null}
   ],
   score:0,
-  gameLost : false
+  tempscore:0,
+  gameLost : false,
+  gameWin : false,
+  change : null,
+  swipe: "none"
 }
 
 componentDidMount() {
   window.addEventListener('keydown', this.keypress, true);
+  this.valuechange();
+}
+
+restart()
+{
+  const {tempValues,values} = this.state;
+  for (var i=0; i < 16; i++) {
+     values[i].value = null;
+     tempValues[i].value = null;
+  }
+  this.setState({
+    values,
+    tempValues,
+    score:0,
+    gameLost:false
+  })
+   
   this.valuechange();
 }
 
@@ -65,6 +131,12 @@ _onTouchStart(e) {
 }
 
 _onTouchMove(e) {
+
+  if(this.state.gameLost)
+  {
+    return;
+  }
+
   if (this.state.initialX === null) {
     return;
   }
@@ -82,7 +154,8 @@ _onTouchMove(e) {
   if (Math.abs(diffX) > Math.abs(diffY)) {
   
     if (diffX > 0) {
-      this.swipeleft();
+        this.swipeleft(); 
+      
     } else {
       this.swiperight();
     }  
@@ -97,35 +170,69 @@ _onTouchMove(e) {
   this.setState(
     {
       initialX : null,
-      initialY : null
+      initialY : null,
+      change : null
     }
   ) 
 
-
-  this.valuechange();
-
 }
 
-toadd(filter_array)
+SoundPlay = (src) => {
+  const soundclip = new Howl({
+    src : ['./sound.wav']
+  })
+  soundclip.play();
+}
+
+toadd(filter_array,res)
 {
-   let {score} = this.state;
-    for(var j=0;j<filter_array.length-1;j++)
+   let {score,tempscore} = this.state;
+    for(var j=0;j<filter_array.length-1;j=j+1)
     {
-     if((filter_array[j] === filter_array[j+1]))
+      if(filter_array[j] === filter_array[j+1] && (j+2 <filter_array.length-1 && filter_array[j+1] === filter_array[j+2]) && filter_array[j+2] !== filter_array[j+3] && res ===1)
+      {
+        this.setState({
+          change:"left"
+        })
+        filter_array[j+2] += filter_array[j+1];
+        this.SoundPlay();
+        filter_array[j+1] = filter_array[j];
+        this.SoundPlay();
+        filter_array[j] = null;
+
+        tempscore = score
+        score += filter_array[j+2]; 
+
+        if(filter_array[j+2] === 2048)
+        {
+          this.setState({
+            gameWin:true,
+            gameLost:true
+          })
+        }
+        break;
+     }
+     else if((filter_array[j] === filter_array[j+1]))
      {
         filter_array[j] += filter_array[j+1];
+        this.SoundPlay();
         filter_array[j+1] = null;
         filter_array =  filter_array.filter(val => val != null);
-        
+
+        tempscore = score;
         score += filter_array[j];
 
         if(filter_array[j] === 2048)
         {
-          console.log("You Win");
+          this.setState({
+            gameWin:true,
+            gameLost:true
+          })
         }
 
         this.setState({
-          score
+          score,
+          tempscore
         })
      }
     }
@@ -134,25 +241,21 @@ toadd(filter_array)
 
 _check(){
     const {values} = this.state;
-
-    for(let i=0;i<16;i=+4)
+    for(let i=0;i<16;i=i+4)
     {
        if(values[i].value === values[i+1].value || values[i+1].value === values[i+2].value || values[i+2].value === values[i+3].value)
        {
-         console.log("true");
-          return 0;
+         return false;
        }
     }
-    for(let i=0;i<4;i++)
+    for(let i=0;i<4;i=i+1)
     {
-       if(values[i].value === values[i+4].value || values[i+4].value === values[i+8].value || values[i+8].value === values[i+12].value)
-       {
-        console.log("true");
-          return 0;
-       }
+      if(values[i].value === values[i+4].value || values[i+4].value === values[i+8].value || values[i+8].value === values[i+12].value)
+      {
+        return false;
+      }
     }
-    console.log("jee");
-    return 1;
+    return true;
 }
 
 isfull(temp_length)
@@ -166,9 +269,14 @@ isfull(temp_length)
 
 
 swipeleft(){
+ 
   let {values} = this.state;
   let {tempValues} = this.state;
   let count = 0;
+
+  this.setState({
+    swipe:"left"
+  })
 
   for (var i=0; i < 16; i+=4) {
     let row = [values[i].value,values[i+1].value,values[i+2].value,values[i+3].value];
@@ -181,23 +289,13 @@ swipeleft(){
 
     if(filter_array.length > 0)
     {
-      filter_array = this.toadd(filter_array);
+      filter_array = this.toadd(filter_array,0);
     }
   
     let temp_length = row.length - filter_array.length;
 
     count += this.isfull(temp_length);
 
-    if(count===4)
-    {
-      console.log("je");
-      this._check();
-      this.setState({
-        gameLost : true
-      })
-      console.log("YOU LOSE")
-    }
-    
     row = filter_array.concat(Array(temp_length).fill(null));
     values[i].value = row[0];
     values[i+1].value = row[1];
@@ -209,6 +307,19 @@ swipeleft(){
     values,
     tempValues
   })
+
+  if(count===4 && this._check())
+  {
+    this.setState({
+      gameLost : true
+    })
+    return;
+  }
+
+  if(count!==4)
+  {
+    this.valuechange();
+  }
 }
 
 swiperight(){
@@ -216,6 +327,10 @@ swiperight(){
   let {tempValues} = this.state; 
   let count = 0;
 
+  this.setState({
+    swipe:"right"
+  })
+
   for (var i=0; i < 16; i+=4) {
     let row = [values[i].value,values[i+1].value,values[i+2].value,values[i+3].value];
     tempValues[i].value = values[i].value;
@@ -227,22 +342,12 @@ swiperight(){
   
     if(filter_array.length > 0)
     {
-      filter_array = this.toadd(filter_array);
+      filter_array = this.toadd(filter_array,1);
     }
 
     let temp_length = row.length - filter_array.length;
 
     count += this.isfull(temp_length);
-
-    if(count === 4)
-    {
-      console.log("je");
-      this._check();
-      this.setState({
-        gameLost : true
-      })
-      console.log("YOU LOSE")
-    }
 
     row = Array(temp_length).fill(null).concat(filter_array);
 
@@ -257,12 +362,29 @@ swiperight(){
     values,
     tempValues
   })
+
+  if(count===4 && this._check())
+  {
+    this.setState({
+      gameLost : true
+    })
+    return;
+  }
+
+  if(count!==4)
+  {
+    this.valuechange();
+  }
 }
 
 swipeup(){
   let {values} = this.state;
   let {tempValues} = this.state;
   let count = 0;
+
+  this.setState({
+    swipe:"up"
+  })
 
   for (var i=0; i < 4; i++) {
     let row = [values[i].value,values[i+4].value,values[i+8].value,values[i+12].value];
@@ -275,22 +397,12 @@ swipeup(){
 
     if(filter_array.length > 0)
     {
-      filter_array = this.toadd(filter_array);
+      filter_array = this.toadd(filter_array,0);
     }
   
     let temp_length = row.length - filter_array.length;
 
     count += this.isfull(temp_length);
-
-    if(count===4)
-    {
-      console.log("je");
-      this._check();
-      this.setState({
-        gameLost : true
-      })
-      console.log("YOU LOSE")
-    }
 
     row = filter_array.concat(Array(temp_length).fill(null));
 
@@ -304,12 +416,29 @@ swipeup(){
     values,
     tempValues
   })
+
+  if(count===4 && this._check())
+  {
+    this.setState({
+      gameLost : true
+    })
+    return;
+  }
+
+  if(count!==4)
+  {
+    this.valuechange();
+  }
 }
 
 swipedown(){
   let {values} = this.state;
   let {tempValues} = this.state;
   let count = 0;
+
+  this.setState({
+    swipe:"down"
+  })
 
   for (var i=0; i < 4; i++) {
     let row = [values[i].value,values[i+4].value,values[i+8].value,values[i+12].value];
@@ -322,23 +451,13 @@ swipedown(){
   
     if(filter_array.length > 0)
     {
-      filter_array = this.toadd(filter_array);
+      filter_array = this.toadd(filter_array,1);
     }
 
     let temp_length = row.length - filter_array.length;
 
     count += this.isfull(temp_length);
   
-    if(count===4)
-    {
-      console.log("je");
-      this._check();
-      this.setState({
-        gameLost : true
-      })
-      console.log("YOU LOSE")
-    }
-
     row = Array(temp_length).fill(null).concat(filter_array);
 
     values[i].value = row[0];
@@ -351,6 +470,19 @@ swipedown(){
     values,
     tempValues
   })
+
+  if(count===4 && this._check())
+  {
+    this.setState({
+      gameLost : true
+    })
+    return;
+  }
+
+  if(count!==4)
+  {
+    this.valuechange();
+  }
 }
 
 valuechange = () =>{
@@ -367,6 +499,9 @@ valuechange = () =>{
       then = true;
       let temp = Math.round(Math.random() * 1000 ) % (arr.length);
       values[rand].value = shuffleArray(arr)[temp];
+      this.setState({
+        change:rand
+      })
     }
   }
   
@@ -376,16 +511,24 @@ valuechange = () =>{
 }
 
 undoGame = () => {
-  const {tempValues,values} = this.state;
+  let {tempValues,values,score,tempscore} = this.state;
   for (var i=0; i < 16; i++) {
      values[i].value = tempValues[i].value
   }
+  score = tempscore;
   this.setState({
-    values 
+    values,
+    gameLost:false,
+    score
   })
 }
 
 keypress = (e) =>{
+  if(this.state.gameLost)
+  {
+    return;
+  }
+
   if(e.keyCode === 37)
   {
     this.swipeleft();
@@ -403,30 +546,58 @@ keypress = (e) =>{
     this.swipedown();
   }
 
-  this.valuechange();
 }
 
 render(){
-  
+  let styles = {};
+  if(this.state.change === "left")
+  {
+    styles = {color:"white",display:"none",}
+  }
+  Howler.volume(1.0)
   return(
     <div className="container" onKeyDown = {this.keypress}>
     <header>
-      <h1 className="row justify-content-center">2048</h1>
-      <h1>Score : {this.state.score}</h1>
-       <div className="button" onClick={() => this.undoGame()}><icons.FcRedo/></div>
+      <div className="row justify-content-center">2048</div>
     </header>
+      <div className="score">Score : {this.state.score}</div>
+      <div className="row d-flex resets">
+      <div className="button icons" onClick={() => this.undoGame()}><FcIcons.FcRedo/></div>
+      <div className="button" onClick={() => this.restart()}><FcIcons.FcRefresh/></div>
+    </div>
+    
     <div className="all">
     <div className="row justify-content-center">
+    <div className={this.state.gameLost===true?"board":"boardnone"}><div className="d-flex titletext justify-content-center"> <li>Y</li><li>o</li><li>u</li>{this.state.gameWin===true?
+                                                                                     <div className="pl-5 d-flex titlextra"><li>W</li><li>i</li><li>n</li><li>!</li></div>:
+                                                                                     <div className="pl-5 d-flex titlextra"><li>L</li><li>o</li><li>s</li><li>t</li><li>!</li></div>}</div>
+                                                                                     <div className="tryagain" onClick={() => this.restart()}>{this.state.gameWin===true?"New Game":"Try Again"}</div>
+    </div>
     <div className="box row" onTouchStart={(e)=>this._onTouchStart(e)}
+    
     onTouchMove={(e)=>this._onTouchMove(e)}>
     {
        this.state.values.map((box,i) =>
        {
+         let change=false;
+         if(i === this.state.change)
+         {
+              change=true;
+         }
          return(
-         <div key={i} className="col-3 grids">{box.value}</div>
-       )})
+         <div key={i} className="col-3 grids" style={styles}><div className="row d-flex justify-content-center"><ValueBox value={box.value} change={change} temp={this.state.tempValues[i].value} swipe={this.state.swipe}/></div></div>
+         )
+        })
     }
     </div>
+    </div>
+    </div>
+    <div className="d-flex footer" >
+    <div className="col-sm-6">
+    <h6 className="pt-1">Designed by <a href="https://www.linkedin.com/in/jeevithavenkatesan137" target="_blank" rel="noopener noreferrer">Jeevitha Venkatesan</a></h6>
+    </div>
+    <div className="col-sm-6">
+    <h6 className="pt-1"><a href="https://jeevitha137.github.io/" target="_blank" rel="noopener noreferrer">Know About Me</a></h6>
     </div>
     </div>
     </div>
