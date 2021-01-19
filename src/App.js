@@ -114,7 +114,8 @@ restart()
     values,
     tempValues,
     score:0,
-    gameLost:false
+    gameLost:false,
+    gameWin:false
   })
    
   this.valuechange();
