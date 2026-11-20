@@ -119,6 +119,8 @@ class App extends Component{
 
 componentDidMount() {
   window.addEventListener('keydown', this.keypress, true);
+  // Standard 2048 starts with 2 tiles.
+  this.valuechange();
   this.valuechange();
 }
 
@@ -149,6 +151,7 @@ restart()
     gameWin:false
   })
    
+  this.valuechange();
   this.valuechange();
 }
 
@@ -374,7 +377,10 @@ swiperight(){
   
     if(filter_array.length > 0)
     {
-      filter_array = this.toadd(filter_array,1);
+      // Merge from the right: reverse, merge left-to-right, reverse back.
+      filter_array = filter_array.slice().reverse();
+      filter_array = this.toadd(filter_array,0);
+      filter_array = filter_array.slice().reverse();
     }
 
     let temp_length = row.length - filter_array.length;
@@ -483,7 +489,10 @@ swipedown(){
   
     if(filter_array.length > 0)
     {
-      filter_array = this.toadd(filter_array,1);
+      // Merge from the right: reverse, merge left-to-right, reverse back.
+      filter_array = filter_array.slice().reverse();
+      filter_array = this.toadd(filter_array,0);
+      filter_array = filter_array.slice().reverse();
     }
 
     let temp_length = row.length - filter_array.length;
@@ -520,7 +529,6 @@ swipedown(){
 valuechange = () =>{
   let {values} = this.state;
   let then = false;
-  let arr = [2,4,8,16];
   while(!then){
     const min = 0;
     const max = 15;
@@ -529,8 +537,8 @@ valuechange = () =>{
     if(values[rand].value === null)
     {
       then = true;
-      let temp = Math.round(Math.random() * 1000 ) % (arr.length);
-      values[rand].value = shuffleArray(arr)[temp];
+      // Standard 2048: spawn 2 (90%) or 4 (10%), never 8/16.
+      values[rand].value = Math.random() < 0.9 ? 2 : 4;
       this.setState({
         change:rand
       })
