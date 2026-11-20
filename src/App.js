@@ -1,7 +1,25 @@
 import React,{Component} from 'react';
 import {Howl, Howler} from 'howler';
 import './App.css';
-import * as FcIcons from "react-icons/fc";
+import { IoMdUndo, IoMdRefresh } from "react-icons/io";
+
+const BEST_KEY = '2048-best';
+
+const readBest = () => {
+  try {
+    return Number(window.localStorage.getItem(BEST_KEY)) || 0;
+  } catch (e) {
+    return 0;
+  }
+};
+
+const writeBest = (value) => {
+  try {
+    window.localStorage.setItem(BEST_KEY, String(value));
+  } catch (e) {
+    /* storage unavailable — best score stays in memory only */
+  }
+};
 
 const shuffleArray =(array) =>  array.sort(() => Math.random() - 0.5);
 const findValue =(num) =>
@@ -19,7 +37,7 @@ const findValue =(num) =>
 const ValueBox = ({value,change,temp,swipe}) => { 
   if(value === null)
   return null;
-    const arr = ["#81D8D0","#93ede4","#aef1f5","#7EF9FF","#008ECC","#81D8D0","#57A0D3","#73C2FB","#89CFF0","#9db0d1","lightblue"];
+    const arr = ["#2b1f45","#332253","#3b2662","#432a70","#4b2e80","#54328f","#5d369f","#663ab0","#713fc2","#7d45d6","#9c27ff"];
     let tran ;
     if(change)
     {
@@ -46,7 +64,7 @@ const ValueBox = ({value,change,temp,swipe}) => {
     }
     let index = findValue(value)
     return (
-    <div className="cellvalues" style={{backgroundColor:arr[index-1],animation:tran}}>{value}</div>
+    <div className="cellvalues" style={{backgroundColor:arr[Math.min(index, arr.length) - 1],animation:tran}}>{value}</div>
     )
 }
 class App extends Component{
@@ -91,6 +109,7 @@ class App extends Component{
     {value: null}
   ],
   score:0,
+  best: readBest(),
   tempscore:0,
   gameLost : false,
   gameWin : false,
@@ -101,6 +120,18 @@ class App extends Component{
 componentDidMount() {
   window.addEventListener('keydown', this.keypress, true);
   this.valuechange();
+}
+
+componentDidUpdate() {
+  const { score, best } = this.state;
+  if (score > best) {
+    this.setState({ best: score });
+    writeBest(score);
+  }
+}
+
+componentWillUnmount() {
+  window.removeEventListener('keydown', this.keypress, true);
 }
 
 restart()
@@ -525,6 +556,12 @@ undoGame = () => {
 }
 
 keypress = (e) =>{
+  if(e.keyCode >= 37 && e.keyCode <= 40)
+  {
+    // stop the arrow keys from scrolling the page (inside and outside the iframe)
+    e.preventDefault();
+  }
+
   if(this.state.gameLost)
   {
     return;
@@ -556,25 +593,35 @@ render(){
     styles = {color:"white",display:"none",}
   }
   Howler.volume(1.0)
+  const params = new URLSearchParams(window.location.search);
+  const hideFooter = params.get('hideFooter') === 'true';
+  const hideTitle = params.get('hideTitle') === 'true';
   return(
     <div className="container" onKeyDown = {this.keypress}>
+    {!hideTitle && (
     <header>
       <div className="row justify-content-center">2048</div>
     </header>
-      <div className="score">Score : {this.state.score}</div>
-      <div className="row d-flex resets">
-      <div className="button icons" onClick={() => this.undoGame()}><FcIcons.FcRedo/></div>
-      <div className="button" onClick={() => this.restart()}><FcIcons.FcRefresh/></div>
-    </div>
+    )}
+      <div className="topbar">
+        <div className="scores">
+          <div className="score"><span>Score</span>{this.state.score}</div>
+          <div className="score"><span>Best</span>{this.state.best}</div>
+        </div>
+        <div className="resets">
+          <button type="button" className="button" title="Undo last move" aria-label="Undo last move" onClick={() => this.undoGame()}><IoMdUndo/></button>
+          <button type="button" className="button" title="New game" aria-label="New game" onClick={() => this.restart()}><IoMdRefresh/></button>
+        </div>
+      </div>
     
     <div className="all">
-    <div className="row justify-content-center">
+    <div className="board-row">
     <div className={this.state.gameLost===true?"board":"boardnone"}><div className="d-flex titletext justify-content-center"> <li>Y</li><li>o</li><li>u</li>{this.state.gameWin===true?
                                                                                      <div className="pl-5 d-flex titlextra"><li>W</li><li>i</li><li>n</li><li>!</li></div>:
                                                                                      <div className="pl-5 d-flex titlextra"><li>L</li><li>o</li><li>s</li><li>t</li><li>!</li></div>}</div>
                                                                                      <div className="tryagain" onClick={() => this.restart()}>{this.state.gameWin===true?"New Game":"Try Again"}</div>
     </div>
-    <div className="box row" onTouchStart={(e)=>this._onTouchStart(e)}
+    <div className="box" onTouchStart={(e)=>this._onTouchStart(e)}
     
     onTouchMove={(e)=>this._onTouchMove(e)}>
     {
@@ -593,14 +640,16 @@ render(){
     </div>
     </div>
     </div>
-    <div className="d-flex footer" >
-    <div className="col-sm-6">
-    <h6 className="pt-1">Designed by <a href="https://www.linkedin.com/in/jeevithavenkatesan137" target="_blank" rel="noopener noreferrer">Jeevitha Venkatesan</a></h6>
+    {!hideFooter && (
+    <div className="d-flex footer">
+    <div className="footer-left">
+    <h6>Designed by <a href="https://www.linkedin.com/in/jeevithavenkatesan137" target="_blank" rel="noopener noreferrer">Jeevitha Venkatesan</a></h6>
     </div>
-    <div className="col-sm-6">
-    <h6 className="pt-1"><a href="https://jeevitha137.github.io/" target="_blank" rel="noopener noreferrer">Know About Me</a></h6>
+    <div className="footer-right">
+    <h6><a href="https://jeevitha137.github.io/" target="_blank" rel="noopener noreferrer">Know About Me</a></h6>
     </div>
     </div>
+    )}
     </div>
   );
 }
